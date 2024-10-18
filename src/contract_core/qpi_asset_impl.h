@@ -8,7 +8,7 @@
 
 bool QPI::QpiContextProcedureCall::distributeDividends(long long amountPerShare) const
 {
-    if (amountPerShare < 0 || amountPerShare * NUMBER_OF_COMPUTORS > MAX_AMOUNT)
+    if (amountPerShare <= 0 || amountPerShare * NUMBER_OF_COMPUTORS > MAX_AMOUNT)
     {
         return false;
     }
@@ -50,11 +50,11 @@ bool QPI::QpiContextProcedureCall::distributeDividends(long long amountPerShare)
                             if (assets[possessionIndex].varStruct.possession.ownershipIndex == ownershipIndex
                                 && assets[possessionIndex].varStruct.possession.type == POSSESSION)
                             {
-                                if (!assets[possessionIndex].varStruct.possession.numberOfShares)
-                                {
-                                    // no share - do nothing
-                                    continue;
-                                }
+                                // if (!assets[possessionIndex].varStruct.possession.numberOfShares)
+                                // {
+                                //     // no share - do nothing
+                                //     continue;
+                                // }
                                 possessorCounter += assets[possessionIndex].varStruct.possession.numberOfShares;
 
                                 increaseEnergy(assets[possessionIndex].varStruct.possession.publicKey, amountPerShare * assets[possessionIndex].varStruct.possession.numberOfShares);
