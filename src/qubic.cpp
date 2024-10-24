@@ -2445,7 +2445,7 @@ static void processTick(unsigned long long processorNumber)
                     unsigned int numTickTxs = txsPool.getNumberOfTickTxs(system.tick + TICK_TRANSACTIONS_PUBLICATION_OFFSET);
                     for (unsigned int tx = 0; tx < numTickTxs; ++tx)
                     {
-#if 0
+#if 1
 #if !defined(NDEBUG) && !defined(NO_UEFI)
                         addDebugMessage(L"txsPool.get() call in processTick()");
                         waitForDebugMessageFlushInAP();
@@ -2464,6 +2464,7 @@ static void processTick(unsigned long long processorNumber)
                                 const m256i* digest = txsPool.getDigest(system.tick + TICK_TRANSACTIONS_PUBLICATION_OFFSET, tx);
                                 // digest should always be != nullptr because pendingTransaction != nullptr
                                 ASSERT(digest);
+                                waitForDebugMessageFlushInAP();
                                 broadcastedFutureTickData.tickData.transactionDigests[nextTxIndex] = digest ? *digest : m256i::zero();
                                 ts.transactionsStorage.nextTickTransactionOffset += transactionSize;
                                 nextTxIndex++;
