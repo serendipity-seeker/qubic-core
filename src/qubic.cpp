@@ -2448,6 +2448,7 @@ static void processTick(unsigned long long processorNumber)
 #if 0
 #if !defined(NDEBUG) && !defined(NO_UEFI)
                         addDebugMessage(L"txsPool.get() call in processTick()");
+                        waitForDebugMessageFlushInAP();
 #endif
                         const Transaction* pendingTransaction = txsPool.get(system.tick + TICK_TRANSACTIONS_PUBLICATION_OFFSET, tx);
                         if (pendingTransaction)

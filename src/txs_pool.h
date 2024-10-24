@@ -125,6 +125,7 @@ public:
     {
 #if !defined(NDEBUG) && !defined(NO_UEFI)
         addDebugMessage(L"Begin txsPool.getNumberOfTickTxs()");
+        waitForDebugMessageFlushInAP();
 #endif
         unsigned int res = 0;
         ACQUIRE(numSavedLock);
@@ -143,6 +144,7 @@ public:
         setText(dbgMsgBuf, L"End txsPool.getNumberOfTickTxs(), res=");
         appendNumber(dbgMsgBuf, res, FALSE);
         addDebugMessage(dbgMsgBuf);
+        waitForDebugMessageFlushInAP();
 #endif
         return res;
     }
@@ -152,6 +154,7 @@ public:
     {
 #if !defined(NDEBUG) && !defined(NO_UEFI)
         addDebugMessage(L"Begin txsPool.getNumberOfPendingTxs()");
+        waitForDebugMessageFlushInAP();
 #endif
         unsigned int res = 0;
         unsigned int startTick = tickEnd;
@@ -188,6 +191,7 @@ public:
         setText(dbgMsgBuf, L"End txsPool.getNumberOfPendingTxs(), res=");
         appendNumber(dbgMsgBuf, res, FALSE);
         addDebugMessage(dbgMsgBuf);
+        waitForDebugMessageFlushInAP();
 #endif
         return res;
     }
@@ -246,6 +250,7 @@ public:
         appendText(dbgMsgBuf, L", index=");
         appendNumber(dbgMsgBuf, index, FALSE);
         addDebugMessage(dbgMsgBuf);
+        waitForDebugMessageFlushInAP();
 #endif
         unsigned int tickIndex;
         if (tickInCurrentEpochStorage(tick))
@@ -268,8 +273,10 @@ public:
         if (hasTx)
         {
             ASSERT(index < NUMBER_OF_TRANSACTIONS_PER_TICK);
+            waitForDebugMessageFlushInAP();
             unsigned long long offset = transactionsStorage.tickTransactionOffsets.getByTickIndex(tickIndex)[index];
             ASSERT(offset != 0);
+            waitForDebugMessageFlushInAP();
             return transactionsStorage.tickTransactions.ptr(offset);
         }
         else
@@ -290,6 +297,7 @@ public:
         appendText(dbgMsgBuf, L", index=");
         appendNumber(dbgMsgBuf, index, FALSE);
         addDebugMessage(dbgMsgBuf);
+        waitForDebugMessageFlushInAP();
 #endif
         unsigned int tickIndex;
         if (tickInCurrentEpochStorage(tick))
@@ -312,6 +320,7 @@ public:
         if (hasTx)
         {
             ASSERT(index < NUMBER_OF_TRANSACTIONS_PER_TICK);
+            waitForDebugMessageFlushInAP();
             return &txsDigestsPtr[tickIndex * NUMBER_OF_TRANSACTIONS_PER_TICK + index];
         }
         else

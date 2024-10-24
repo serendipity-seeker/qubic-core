@@ -125,4 +125,19 @@ static void addDebugMessageAssert(const CHAR16* message, const CHAR16* file, con
     RELEASE(debugLogLock);
 }
 
+// Only works in application processors (not in main processor loop)
+static void waitForDebugMessageFlushInAP()
+{
+    bool wait = true;
+    while (1)
+    {
+        ACQUIRE(debugLogLock);
+        wait = (debugMessageCount > 0);
+        RELEASE(debugLogLock);
+        if (!wait)
+            break;
+        _mm_pause();
+    }
+}
+
 #endif
