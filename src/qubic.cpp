@@ -2445,6 +2445,7 @@ static void processTick(unsigned long long processorNumber)
                     unsigned int numTickTxs = txsPool.getNumberOfTickTxs(system.tick + TICK_TRANSACTIONS_PUBLICATION_OFFSET);
                     for (unsigned int tx = 0; tx < numTickTxs; ++tx)
                     {
+#if 0
 #if !defined(NDEBUG) && !defined(NO_UEFI)
                         addDebugMessage(L"txsPool.get() call in processTick()");
 #endif
@@ -2470,6 +2471,7 @@ static void processTick(unsigned long long processorNumber)
                             txsPool.releaseLock();
                         }
                         else
+#endif
                         {
                             break;
                         }
@@ -3687,6 +3689,7 @@ static void tickProcessor(void*)
                             unsigned int numTickTxs = txsPool.getNumberOfTickTxs(nextTick);
                             for (unsigned int i = 0; i < numTickTxs; ++i)
                             {
+#if 0
 #if !defined(NDEBUG) && !defined(NO_UEFI)
                                 addDebugMessage(L"txsPool.get() call in tickProcessor()");
 #endif
@@ -3729,6 +3732,7 @@ static void tickProcessor(void*)
                                     }
                                     txsPool.releaseLock();
                                 }
+#endif
                             }
 
                             for (unsigned int i = 0; i < NUMBER_OF_TRANSACTIONS_PER_TICK; i++)
