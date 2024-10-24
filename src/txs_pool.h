@@ -269,10 +269,8 @@ public:
         if (hasTx)
         {
             ASSERT(index < NUMBER_OF_TRANSACTIONS_PER_TICK);
-            waitForDebugMessageFlushInAP();
             unsigned long long offset = transactionsStorage.tickTransactionOffsets.getByTickIndex(tickIndex)[index];
             ASSERT(offset != 0);
-            waitForDebugMessageFlushInAP();
             return transactionsStorage.tickTransactions.ptr(offset);
         }
         else
