@@ -4296,6 +4296,10 @@ static bool initialize()
     if (!initFilesystem())
         return false;
 
+#if !defined(NDEBUG)
+    printDebugMessages();
+#endif
+
     EFI_STATUS status;
     {
         if (!ts.init())
@@ -5337,9 +5341,17 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
     appendText(message, L" is launched.");
     logToConsole(message);
 
+#if !defined(NDEBUG)
+    printDebugMessages();
+#endif
+
     if (initialize())
     {
         logToConsole(L"Setting up multiprocessing ...");
+
+#if !defined(NDEBUG)
+        printDebugMessages();
+#endif
 
         EFI_STATUS status;
 
@@ -5486,6 +5498,11 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
             unsigned int tickRequestingIndicator = 0, futureTickRequestingIndicator = 0;
             unsigned int lastSavedTick = system.tick;
             logToConsole(L"Init complete! Entering main loop ...");
+
+#if !defined(NDEBUG)
+            printDebugMessages();
+#endif
+
             while (!shutDownNode)
             {
                 if (criticalSituation == 1)
@@ -5859,6 +5876,10 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
     {
         logToConsole(L"Initialization fails!");
     }
+
+#if !defined(NDEBUG)
+    printDebugMessages();
+#endif
 
     deinitialize();
 
