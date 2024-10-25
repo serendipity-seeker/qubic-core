@@ -427,6 +427,8 @@ public:
         ASSERT(oldTxsDigestsPtr != nullptr);
         ASSERT(oldTxsDigestsPtr == txsDigestsPtr + txsDigestsLengthCurrentEpoch);
 
+        printDebugMessages(); // deadlock after initial beginEpoch()
+
         // Check transactions storage
         transactionsStorage.checkStateConsistencyWithAssert();
 
@@ -459,6 +461,7 @@ public:
                     ASSERT(txPtr == nullptr);
                 }
             }
+            printDebugMessages(); // deadlock after initial beginEpoch()
         }
 
 #if !defined(NDEBUG) && !defined(NO_UEFI)
