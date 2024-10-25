@@ -238,7 +238,7 @@ public:
     // If no more transactions for this tick, return nullptr.
     static Transaction* get(unsigned int tick, unsigned int index)
     {
-#if !defined(NDEBUG) && !defined(NO_UEFI)
+#if 0 // !defined(NDEBUG) && !defined(NO_UEFI)
         addDebugMessage(L"txsPool.get()");
         CHAR16 dbgMsgBuf[200];
         setText(dbgMsgBuf, L"tick=");
