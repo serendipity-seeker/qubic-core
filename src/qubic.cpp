@@ -4248,6 +4248,7 @@ static bool saveSystem(CHAR16* directory)
 
 static bool initialize()
 {
+    outputStringToConsole(L"6");
     enableAVX();
 
 #if defined (__AVX512F__) && !GENERIC_K12
@@ -4256,6 +4257,8 @@ static bool initialize()
 #if defined (__AVX512F__)
     initAVX512FourQConstants();
 #endif
+
+    outputStringToConsole(L"7");
 
     getPublicKeyFromIdentity((const unsigned char*)OPERATOR, operatorPublicKey.m256i_u8);
     if (isZero(operatorPublicKey))
@@ -4276,6 +4279,7 @@ static bool initialize()
     getPublicKeyFromIdentity((const unsigned char*)ARBITRATOR, (unsigned char*)&arbitratorPublicKey);
 
     initTimeStampCounter();
+    outputStringToConsole(L"8");
 
     bs->SetMem(&tickTicks, sizeof(tickTicks), 0);
 
@@ -4292,33 +4296,43 @@ static bool initialize()
     requestedTickTransactions.header.setSize<sizeof(requestedTickTransactions)>();
     requestedTickTransactions.header.setType(REQUEST_TICK_TRANSACTIONS);
     requestedTickTransactions.requestedTickTransactions.tick = 0;
+    outputStringToConsole(L"9");
 
     if (!initFilesystem())
         return false;
+    outputStringToConsole(L"10");
 
 #if !defined(NDEBUG)
     printDebugMessages();
 #endif
+    outputStringToConsole(L"11");
 
     EFI_STATUS status;
     {
         if (!ts.init())
             return false;
+        outputStringToConsole(L"12");
         if (!txsPool.init())
             return false;
 
+        outputStringToConsole(L"13");
         bs->SetMem(spectrumChangeFlags, sizeof(spectrumChangeFlags), 0);
+        outputStringToConsole(L"14");
 
         if (!initSpectrum())
             return false;
+        outputStringToConsole(L"15");
 
         if (!initCommonBuffers())
             return false;
+        outputStringToConsole(L"16");
 
         if (!initAssets())
             return false;
+        outputStringToConsole(L"17");
 
         initContractExec();
+        outputStringToConsole(L"18");
         for (unsigned int contractIndex = 0; contractIndex < contractCount; contractIndex++)
         {
             unsigned long long size = contractDescriptions[contractIndex].stateSize;
@@ -4336,6 +4350,7 @@ static bool initialize()
             return false;
         }
         setMem(score, sizeof(*score), 0);
+        outputStringToConsole(L"19");
 
         bs->SetMem(solutionThreshold, sizeof(int) * MAX_NUMBER_EPOCH, 0);
         if (status = bs->AllocatePool(EfiRuntimeServicesData, NUMBER_OF_MINER_SOLUTION_FLAGS / 8, (void**)&minerSolutionFlags))
@@ -4344,12 +4359,14 @@ static bool initialize()
 
             return false;
         }
+        outputStringToConsole(L"20");
 
         if (!logger.initLogging())
         {
             return false;
         }
-            
+        outputStringToConsole(L"21");
+
 
 #if ADDON_TX_STATUS_REQUEST
         if (!initTxStatusRequestAddOn())
@@ -4358,6 +4375,7 @@ static bool initialize()
             return false;
         }
 #endif
+        outputStringToConsole(L"22");
 
         logToConsole(L"Loading system file ...");
         bs->SetMem(&system, sizeof(system), 0);
@@ -4373,8 +4391,11 @@ static bool initialize()
             system.initialTick = TICK;
         }
         system.tick = system.initialTick;
+        outputStringToConsole(L"23");
 
         beginEpoch();
+        outputStringToConsole(L"24");
+
 #if TICK_STORAGE_AUTOSAVE_MODE
         bool canLoadFromFile = loadAllNodeStates();
 #else
@@ -4393,6 +4414,7 @@ static bool initialize()
             etalonTick.day = system.initialDay;
             etalonTick.month = system.initialMonth;
             etalonTick.year = system.initialYear;
+            outputStringToConsole(L"25");
 
             loadSpectrum();
             {
@@ -4434,6 +4456,7 @@ static bool initialize()
                 appendText(message, L").");
                 logToConsole(message);
             }
+            outputStringToConsole(L"26");
             logToConsole(L"Loading universe file ...");
             if (!loadUniverse())
                 return false;
@@ -4447,6 +4470,7 @@ static bool initialize()
                 appendText(message, L".");
                 logToConsole(message);
             }
+            outputStringToConsole(L"27");
             loadComputer();
             m256i computerDigest;
             {
@@ -4471,6 +4495,7 @@ static bool initialize()
             logToConsole(L"Loaded node state from snapshot, if you want to start from scratch please delete all snapshot files.");
         }
     }
+    outputStringToConsole(L"28");
 
     initializeContracts();
 
@@ -4484,6 +4509,7 @@ static bool initialize()
         setNewMiningSeed();
     }    
     score->loadScoreCache(system.epoch);
+    outputStringToConsole(L"29");
 
     logToConsole(L"Allocating buffers ...");
     if ((status = bs->AllocatePool(EfiRuntimeServicesData, 536870912, (void**)&dejavu0))
@@ -4507,6 +4533,7 @@ static bool initialize()
 
         return false;
     }
+    outputStringToConsole(L"30");
 
     for (unsigned int i = 0; i < NUMBER_OF_OUTGOING_CONNECTIONS + NUMBER_OF_INCOMING_CONNECTIONS; i++)
     {
@@ -4554,6 +4581,7 @@ static bool initialize()
             peers[i].isIncommingConnection = TRUE;
         }
     }
+    outputStringToConsole(L"31");
 
     // add knownPublicPeers to list of peers (all with verified status)
     logToConsole(L"Populating publicPeers ...");
@@ -4564,6 +4592,7 @@ static bool initialize()
         if (numberOfPublicPeers > 0)
             publicPeers[numberOfPublicPeers - 1].isVerified = true;
     }
+    outputStringToConsole(L"32");
 
     logToConsole(L"Init TCP...");
     if (!initTcp4(PORT))
@@ -4572,7 +4601,8 @@ static bool initialize()
     emptyTickResolver.clock = 0;
     emptyTickResolver.tick = 0;
     emptyTickResolver.lastTryClock = 0;
-    
+    outputStringToConsole(L"33");
+
     return true;
 }
 
@@ -5331,22 +5361,33 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
     rs = st->RuntimeServices;
     bs = st->BootServices;
 
+    outputStringToConsole(L"1");
+
     bs->SetWatchdogTimer(0, 0, 0, NULL);
 
     initTime();
 
+    outputStringToConsole(L"2");
+
     st->ConOut->ClearScreen(st->ConOut);
+    outputStringToConsole(L"3");
     setText(message, L"Qubic ");
     appendQubicVersion(message);
     appendText(message, L" is launched.");
     logToConsole(message);
 
+    outputStringToConsole(L"4");
+
 #if !defined(NDEBUG)
     printDebugMessages();
 #endif
 
+    outputStringToConsole(L"5");
+
     if (initialize())
     {
+        outputStringToConsole(L"34");
+
         logToConsole(L"Setting up multiprocessing ...");
 
 #if !defined(NDEBUG)
@@ -5874,6 +5915,7 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
     }
     else
     {
+        outputStringToConsole(L"99 Initialization fails!");
         logToConsole(L"Initialization fails!");
     }
 
