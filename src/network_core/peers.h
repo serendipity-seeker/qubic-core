@@ -409,9 +409,11 @@ static void addPublicPeer(const IPv4Address& address)
 
 static void printWithIp(const CHAR16* text, const IPv4Address& ip)
 {
+#if 1
     setText(message, text);
     appendIPv4Address(message, ip);
     logToConsole(message);
+#endif
 }
 
 static bool peerConnectionNewlyEstablished(unsigned int i)
@@ -429,7 +431,7 @@ static bool peerConnectionNewlyEstablished(unsigned int i)
             if (peers[i].connectAcceptToken.CompletionToken.Status)
             {
                 // connection rejected
-                printWithIp(L"peerConnectionNewlyEstablished() -> outgoing conn rejected ", peers[i].address);
+                //printWithIp(L"peerConnectionNewlyEstablished() -> outgoing conn rejected ", peers[i].address);
                 peers[i].connectAcceptToken.CompletionToken.Status = -1;
                 penalizePublicPeerRejectedConnection(peers[i].address);
                 closePeer(&peers[i]);
@@ -782,7 +784,7 @@ static void peerReconnectIfInactive(unsigned int i, unsigned short port)
                     }
                     else
                     {
-                        printWithIp(L"peerReconnectIfInactive() -> new outgoing ", peers[i].address);
+                        //printWithIp(L"peerReconnectIfInactive() -> new outgoing ", peers[i].address);
                         peers[i].isConnectingAccepting = TRUE;
                     }
                 }
