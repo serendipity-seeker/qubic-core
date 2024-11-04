@@ -5001,10 +5001,6 @@ static void logInfo()
     appendNumber(message, spectrumReorgTotalExecutionTicks * 1000 / frequency, TRUE);
     appendText(message, L" ms.");
     logToConsole(message);
-
-    setText(message, L"Entity balance dust threshold: ");
-    appendNumber(message, (dustThresholdBurnAll > dustThresholdBurnHalf) ? dustThresholdBurnAll : dustThresholdBurnHalf, TRUE);
-    logToConsole(message);
 }
 
 static void logHealthStatus()
@@ -5279,6 +5275,9 @@ static void processKeyPresses()
 
             logHealthStatus();
 
+            setText(message, L"Entity balance dust threshold: ");
+            appendNumber(message, (dustThresholdBurnAll > dustThresholdBurnHalf) ? dustThresholdBurnAll : dustThresholdBurnHalf, TRUE);
+            logToConsole(message);
 
             setText(message, L"Average K12 duration for  ");
 #if defined (__AVX512F__) && !GENERIC_K12
