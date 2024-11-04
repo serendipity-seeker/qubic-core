@@ -407,6 +407,13 @@ static void addPublicPeer(const IPv4Address& address)
     RELEASE(publicPeersLock);
 }
 
+static void printWithIp(const CHAR16* text, const IPv4Address& ip)
+{
+    setText(message, text);
+    appendIPv4Address(message, ip);
+    logToConsole(message);
+}
+
 static bool peerConnectionNewlyEstablished(unsigned int i)
 {
     // handle new connections (called in main loop)
@@ -422,6 +429,7 @@ static bool peerConnectionNewlyEstablished(unsigned int i)
             if (peers[i].connectAcceptToken.CompletionToken.Status)
             {
                 // connection rejected
+                printWithIp(L"peerConnectionNewlyEstablished() -> outgoing conn rejected ", peers[i].address);
                 peers[i].connectAcceptToken.CompletionToken.Status = -1;
                 penalizePublicPeerRejectedConnection(peers[i].address);
                 closePeer(&peers[i]);
@@ -431,10 +439,12 @@ static bool peerConnectionNewlyEstablished(unsigned int i)
                 peers[i].connectAcceptToken.CompletionToken.Status = -1;
                 if (peers[i].isClosing)
                 {
+                    printWithIp(L"peerConnectionNewlyEstablished() -> outgoing conn closed ", peers[i].address);
                     closePeer(&peers[i]);
                 }
                 else
                 {
+                    printWithIp(L"peerConnectionNewlyEstablished() -> outgoing conn acepted ", peers[i].address);
                     peers[i].isConnectedAccepted = TRUE;
                 }
             }
@@ -446,6 +456,7 @@ static bool peerConnectionNewlyEstablished(unsigned int i)
             if (peers[i].connectAcceptToken.CompletionToken.Status)
             {
                 // connection error
+                printWithIp(L"peerConnectionNewlyEstablished() -> incomming conn error ", peers[i].address);
                 peers[i].connectAcceptToken.CompletionToken.Status = -1;
                 peers[i].tcp4Protocol = NULL;
             }
@@ -454,6 +465,7 @@ static bool peerConnectionNewlyEstablished(unsigned int i)
                 peers[i].connectAcceptToken.CompletionToken.Status = -1;
                 if (peers[i].isClosing)
                 {
+                    printWithIp(L"peerConnectionNewlyEstablished() -> incomming conn closed ", peers[i].address);
                     closePeer(&peers[i]);
                 }
                 else
@@ -461,6 +473,7 @@ static bool peerConnectionNewlyEstablished(unsigned int i)
                     EFI_STATUS status = bs->OpenProtocol(peers[i].connectAcceptToken.NewChildHandle, &tcp4ProtocolGuid, (void**)&peers[i].tcp4Protocol, ih, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
                     if (status)
                     {
+                        printWithIp(L"peerConnectionNewlyEstablished() -> incomming conn error 2", peers[i].address);
                         logStatusToConsole(L"EFI_BOOT_SERVICES.OpenProtocol() fails", status, __LINE__);
 
                         tcp4ServiceBindingProtocol->DestroyChild(tcp4ServiceBindingProtocol, peers[i].connectAcceptToken.NewChildHandle);
@@ -477,22 +490,26 @@ static bool peerConnectionNewlyEstablished(unsigned int i)
                             {
                                 if (!isWhiteListPeer(tcp4ConfigData.AccessPoint.RemoteAddress.Addr))
                                 {
+                                    printWithIp(L"peerConnectionNewlyEstablished() -> incomming conn error 3", peers[i].address);
                                     closePeer(&peers[i]);
                                     return false;
                                 }
                                 else
                                 {
+                                    printWithIp(L"peerConnectionNewlyEstablished() -> incomming conn accepted 2 ", peers[i].address);
                                     peers[i].isConnectedAccepted = TRUE;
                                 }
                             }
                             else
                             {
+                                printWithIp(L"peerConnectionNewlyEstablished() -> incomming conn error 4", peers[i].address);
                                 closePeer(&peers[i]);
                                 return false;
                             }
                         }
                         else
                         {
+                            printWithIp(L"peerConnectionNewlyEstablished() -> incomming conn accepted ", peers[i].address);
                             peers[i].isConnectedAccepted = TRUE;
                         }
                     }
@@ -531,6 +548,7 @@ static void peerReceiveAndTransmit(unsigned int i, unsigned int salt)
             peers[i].isReceiving = FALSE;
             if (peers[i].receiveToken.CompletionToken.Status)
             {
+                printWithIp(L"peerReceiveAndTransmit() -> receive error 1 -> close", peers[i].address);
                 peers[i].receiveToken.CompletionToken.Status = -1;
                 closePeer(&peers[i]);
             }
@@ -539,6 +557,7 @@ static void peerReceiveAndTransmit(unsigned int i, unsigned int salt)
                 peers[i].receiveToken.CompletionToken.Status = -1;
                 if (peers[i].isClosing)
                 {
+                    printWithIp(L"peerReceiveAndTransmit() -> receive closed", peers[i].address);
                     closePeer(&peers[i]);
                 }
                 else
@@ -641,6 +660,7 @@ static void peerReceiveAndTransmit(unsigned int i, unsigned int salt)
                     if ((status = peers[i].tcp4Protocol->GetModeData(peers[i].tcp4Protocol, &state, NULL, NULL, NULL, NULL))
                         || state == Tcp4StateClosed)
                     {
+                        printWithIp(L"peerReceiveAndTransmit() -> receive error 2 -> close", peers[i].address);
                         closePeer(&peers[i]);
                     }
                     else
@@ -654,6 +674,7 @@ static void peerReceiveAndTransmit(unsigned int i, unsigned int salt)
                                 logStatusToConsole(L"EFI_TCP4_PROTOCOL.Receive() fails", status, __LINE__);
                             }
 
+                            printWithIp(L"peerReceiveAndTransmit() -> receive error 3 -> close", peers[i].address);
                             closePeer(&peers[i]);
                         }
                         else
@@ -675,6 +696,7 @@ static void peerReceiveAndTransmit(unsigned int i, unsigned int salt)
             if (peers[i].transmitToken.CompletionToken.Status)
             {
                 // transmission error
+                printWithIp(L"peerReceiveAndTransmit() -> transmit error 1 -> close", peers[i].address);
                 peers[i].transmitToken.CompletionToken.Status = -1;
                 closePeer(&peers[i]);
             }
@@ -683,6 +705,7 @@ static void peerReceiveAndTransmit(unsigned int i, unsigned int salt)
                 peers[i].transmitToken.CompletionToken.Status = -1;
                 if (peers[i].isClosing)
                 {
+                    printWithIp(L"peerReceiveAndTransmit() -> transmit closed", peers[i].address);
                     closePeer(&peers[i]);
                 }
                 else
@@ -704,6 +727,7 @@ static void peerReceiveAndTransmit(unsigned int i, unsigned int salt)
             {
                 logStatusToConsole(L"EFI_TCP4_PROTOCOL.Transmit() fails", status, __LINE__);
 
+                printWithIp(L"peerReceiveAndTransmit() -> transmit error 2 -> close", peers[i].address);
                 closePeer(&peers[i]);
             }
             else
@@ -758,6 +782,7 @@ static void peerReconnectIfInactive(unsigned int i, unsigned short port)
                     }
                     else
                     {
+                        printWithIp(L"peerReconnectIfInactive() -> new outgoing ", peers[i].address);
                         peers[i].isConnectingAccepting = TRUE;
                     }
                 }
