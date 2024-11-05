@@ -791,7 +791,12 @@ static void processBroadcastFutureTickData(Peer* peer, RequestResponseHeader* he
 
 static void processBroadcastTransaction(Peer* peer, RequestResponseHeader* header)
 {
+    bool debug = false;    
     Transaction* request = header->getPayload<Transaction>();
+    if (isZero(request->destinationPublicKey) && request->inputType >= 3)
+    {
+        debug = true;
+    }
     const unsigned int transactionSize = request->totalSize();
     if (request->checkValidity() && transactionSize == header->size() - sizeof(RequestResponseHeader))
     {
@@ -836,6 +841,10 @@ static void processBroadcastTransaction(Peer* peer, RequestResponseHeader* heade
                         bs->CopyMem(&entityPendingTransactions[spectrumIndex * MAX_TRANSACTION_SIZE], request, transactionSize);
                         KangarooTwelve(request, transactionSize, &entityPendingTransactionDigests[spectrumIndex * 32ULL], 32);
                     }
+                    else
+                    {
+                        if (debug) addDebugMessage(L"Failed this");
+                    }
 
                     RELEASE(entityPendingTransactionsLock);
                 }
@@ -868,6 +877,18 @@ static void processBroadcastTransaction(Peer* peer, RequestResponseHeader* heade
                 }
             }
             ts.tickData.releaseLock();
+        }
+        else
+        {
+            if (debug) addDebugMessage(L"Failed verifying");
+        }
+    }
+    else
+    {
+        if (debug)
+        {
+            if (!request->checkValidity()) addDebugMessage(L"Failed request->checkValidity()");
+            if (!(transactionSize == header->size() - sizeof(RequestResponseHeader))) addDebugMessage(L"Failed transactionSize == header->size() - sizeof(RequestResponseHeader)");
         }
     }
 }
