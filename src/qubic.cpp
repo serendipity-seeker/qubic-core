@@ -835,6 +835,7 @@ static void processBroadcastTransaction(Peer* peer, RequestResponseHeader* heade
         appendNumber(dbg, m_sec, true);
         appendText(dbg, L"ms");
         addDebugMessage(dbg);
+        waitForDebugMessageFlushInAP();
     }
 }
 
@@ -3449,6 +3450,7 @@ static void tickProcessor(void*)
                         appendNumber(dbg, m_sec, true);
                         appendText(dbg, L"ms");
                         addDebugMessage(dbg);
+                        waitForDebugMessageFlushInAP();
                     }
                     latestProcessedTick = system.tick;
                 }
