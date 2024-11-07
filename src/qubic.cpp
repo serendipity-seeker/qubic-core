@@ -830,7 +830,7 @@ static void processBroadcastTransaction(Peer* peer, RequestResponseHeader* heade
     unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
     {
         CHAR16 dbg[256];
-        unsigned long long m_sec = total_ticks * 1000 / frequency
+        unsigned long long m_sec = total_ticks * 1000 / frequency;
         setText(dbg, L"******* Time to process broadcast tx ");
         appendNumber(dbg, m_sec, true);
         appendText(dbg, L"ms");
@@ -2458,8 +2458,8 @@ static void processTick(unsigned long long processorNumber)
                     {
 #if 1
 #if !defined(NDEBUG) && !defined(NO_UEFI)
-                        addDebugMessage(L"txsPool.get() call in processTick()");
-                        waitForDebugMessageFlushInAP();
+                        // addDebugMessage(L"txsPool.get() call in processTick()");
+                        // waitForDebugMessageFlushInAP();
 #endif
                         const Transaction* pendingTransaction = txsPool.get(system.tick + TICK_TRANSACTIONS_PUBLICATION_OFFSET, tx);
                         if (pendingTransaction)

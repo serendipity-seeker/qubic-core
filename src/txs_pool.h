@@ -124,7 +124,7 @@ public:
     static unsigned int getNumberOfTickTxs(unsigned int tick)
     {
 #if !defined(NDEBUG) && !defined(NO_UEFI)
-        addDebugMessage(L"Begin txsPool.getNumberOfTickTxs()");
+        // addDebugMessage(L"Begin txsPool.getNumberOfTickTxs()");
 #endif
         unsigned int res = 0;
         ACQUIRE(numSavedLock);
@@ -139,10 +139,10 @@ public:
         RELEASE(numSavedLock);
 
 #if !defined(NDEBUG) && !defined(NO_UEFI)
-        CHAR16 dbgMsgBuf[200];
-        setText(dbgMsgBuf, L"End txsPool.getNumberOfTickTxs(), res=");
-        appendNumber(dbgMsgBuf, res, FALSE);
-        addDebugMessage(dbgMsgBuf);
+        // CHAR16 dbgMsgBuf[200];
+        // setText(dbgMsgBuf, L"End txsPool.getNumberOfTickTxs(), res=");
+        // appendNumber(dbgMsgBuf, res, FALSE);
+        // addDebugMessage(dbgMsgBuf);
 #endif
         return res;
     }
