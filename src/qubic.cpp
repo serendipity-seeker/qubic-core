@@ -781,6 +781,8 @@ static void processBroadcastFutureTickData(Peer* peer, RequestResponseHeader* he
 
 static void processBroadcastTransaction(Peer* peer, RequestResponseHeader* header)
 {
+    unsigned long long debug_start_tick = __rdtsc();
+
     Transaction* request = header->getPayload<Transaction>();
     const unsigned int transactionSize = request->totalSize();
     if (request->checkValidity() && transactionSize == header->size() - sizeof(RequestResponseHeader))
@@ -824,6 +826,15 @@ static void processBroadcastTransaction(Peer* peer, RequestResponseHeader* heade
             }
             ts.tickData.releaseLock();
         }
+    }
+    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
+    {
+        CHAR16 dbg[256];
+        unsigned long long m_sec = total_ticks * 1000 / frequency
+        setText(dbg, L"******* Time to process broadcast tx ");
+        appendNumber(dbg, m_sec, true);
+        appendText(dbg, L"ms");
+        addDebugMessage(dbg);
     }
 }
 
@@ -2500,6 +2511,7 @@ static void processTick(unsigned long long processorNumber)
         }
     }
 
+#if 0
     for (unsigned int i = 0; i < numberOfOwnComputorIndices; i++)
     {
         if ((system.tick + TICK_VOTE_COUNTER_PUBLICATION_OFFSET) % NUMBER_OF_COMPUTORS == ownComputorIndices[i])
@@ -2521,7 +2533,7 @@ static void processTick(unsigned long long processorNumber)
             }
         }
     }
-
+#endif
     if (mainAuxStatus & 1)
     {
         // Publish solutions that were sent via BroadcastMessage as MiningSolutionTransaction
@@ -3427,7 +3439,17 @@ static void tickProcessor(void*)
                         while (requestPersistingNodeState) _mm_pause();
                         persistingNodeStateTickProcWaiting = 0;
                     }
+                    unsigned long long start_tick = __rdtsc();                    
                     processTick(processorNumber);
+                    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
+                    {
+                        CHAR16 dbg[256];
+                        unsigned long long m_sec = total_ticks * 1000 / frequency
+                        setText(dbg, L"+++++++++++++ Time to processTick ");
+                        appendNumber(dbg, m_sec, true);
+                        appendText(dbg, L"ms");
+                        addDebugMessage(dbg);
+                    }
                     latestProcessedTick = system.tick;
                 }
 
