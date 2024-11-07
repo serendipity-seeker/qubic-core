@@ -3439,7 +3439,7 @@ static void tickProcessor(void*)
                         while (requestPersistingNodeState) _mm_pause();
                         persistingNodeStateTickProcWaiting = 0;
                     }
-                    unsigned long long start_tick = __rdtsc();                    
+                    unsigned long long debug_start_tick = __rdtsc();                    
                     processTick(processorNumber);
                     unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
                     {
