@@ -3454,7 +3454,8 @@ static void tickProcessor(void*)
                     }
                     latestProcessedTick = system.tick;
                 }
-
+                unsigned long long debug_start_tick = __rdtsc();
+                
                 if (futureTickTotalNumberOfComputors > NUMBER_OF_COMPUTORS - QUORUM)
                 {
                     const Tick* tsCompTicks = ts.ticks.getByTickIndex(nextTickIndex);
@@ -3513,6 +3514,18 @@ static void tickProcessor(void*)
                         }
                     }
                 }
+                {
+                    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
+                    CHAR16 dbg[256];
+                    unsigned long long m_sec = total_ticks * 1000 / frequency
+                    setText(dbg, L"+++++++++++++ Time to P1 ");
+                    appendNumber(dbg, m_sec, true);
+                    appendText(dbg, L"ms");
+                    addDebugMessage(dbg);
+                    waitForDebugMessageFlushInAP();
+                }
+
+                debug_start_tick = __rdtsc();
 
                 if (!targetNextTickDataDigestIsKnown)
                 {
@@ -3574,7 +3587,17 @@ static void tickProcessor(void*)
                         }
                     }
                 }
-
+                {
+                    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
+                    CHAR16 dbg[256];
+                    unsigned long long m_sec = total_ticks * 1000 / frequency
+                    setText(dbg, L"+++++++++++++ Time to P2 ");
+                    appendNumber(dbg, m_sec, true);
+                    appendText(dbg, L"ms");
+                    addDebugMessage(dbg);
+                    waitForDebugMessageFlushInAP();
+                }
+                debug_start_tick = __rdtsc();
                 ts.tickData.acquireLock();
                 bs->CopyMem(&nextTickData, &ts.tickData[nextTickIndex], sizeof(TickData));
                 ts.tickData.releaseLock();
@@ -3594,7 +3617,17 @@ static void tickProcessor(void*)
                         nextTickData.epoch = 0;
                     }
                 }
-
+                {
+                    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
+                    CHAR16 dbg[256];
+                    unsigned long long m_sec = total_ticks * 1000 / frequency
+                    setText(dbg, L"+++++++++++++ Time to P3 ");
+                    appendNumber(dbg, m_sec, true);
+                    appendText(dbg, L"ms");
+                    addDebugMessage(dbg);
+                    waitForDebugMessageFlushInAP();
+                }
+                debug_start_tick = __rdtsc();
                 bool tickDataSuits;
                 if (!targetNextTickDataDigestIsKnown)
                 {
@@ -3634,7 +3667,17 @@ static void tickProcessor(void*)
                         }
                     }
                 }
-
+                {
+                    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
+                    CHAR16 dbg[256];
+                    unsigned long long m_sec = total_ticks * 1000 / frequency
+                    setText(dbg, L"+++++++++++++ Time to P4 ");
+                    appendNumber(dbg, m_sec, true);
+                    appendText(dbg, L"ms");
+                    addDebugMessage(dbg);
+                    waitForDebugMessageFlushInAP();
+                }
+                debug_start_tick = __rdtsc();
                 // operator opt to force this node to switch to new epoch
                 // this can fix the problem of weak nodes getting stuck and can't automatically switch to new epoch
                 // due to lack of TRANSACTION data. Below is the explanation:
@@ -3784,6 +3827,17 @@ static void tickProcessor(void*)
                         }
                         nextTickTransactionsSemaphore = 0;
                     }
+                    {
+                        unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
+                        CHAR16 dbg[256];
+                        unsigned long long m_sec = total_ticks * 1000 / frequency
+                        setText(dbg, L"+++++++++++++ Time to P5 ");
+                        appendNumber(dbg, m_sec, true);
+                        appendText(dbg, L"ms");
+                        addDebugMessage(dbg);
+                        waitForDebugMessageFlushInAP();
+                    }
+                    debug_start_tick = __rdtsc();
 
                     if (numberOfKnownNextTickTransactions != numberOfNextTickTransactions)
                     {
@@ -4163,6 +4217,17 @@ static void tickProcessor(void*)
                                         tickTicks[i] = tickTicks[i + 1];
                                     }
                                     tickTicks[sizeof(tickTicks) / sizeof(tickTicks[0]) - 1] = __rdtsc();
+                                    {
+                                        unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
+                                        CHAR16 dbg[256];
+                                        unsigned long long m_sec = total_ticks * 1000 / frequency
+                                        setText(dbg, L"+++++++++++++ Time to P6 ");
+                                        appendNumber(dbg, m_sec, true);
+                                        appendText(dbg, L"ms");
+                                        addDebugMessage(dbg);
+                                        waitForDebugMessageFlushInAP();
+                                    }
+                                    debug_start_tick = __rdtsc();
                                 }
                             }
                         }
