@@ -830,7 +830,7 @@ static void processBroadcastTransaction(Peer* peer, RequestResponseHeader* heade
     unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
     {
         CHAR16 dbg[256];
-        unsigned long long m_sec = total_ticks * 1000 / frequency;
+        unsigned long long m_sec = total_ticks * 1000 / frequency;;
         setText(dbg, L"******* Time to process broadcast tx ");
         appendNumber(dbg, m_sec, true);
         appendText(dbg, L"ms");
@@ -3445,7 +3445,7 @@ static void tickProcessor(void*)
                     unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
                     {
                         CHAR16 dbg[256];
-                        unsigned long long m_sec = total_ticks * 1000 / frequency
+                        unsigned long long m_sec = total_ticks * 1000 / frequency;
                         setText(dbg, L"+++++++++++++ Time to processTick ");
                         appendNumber(dbg, m_sec, true);
                         appendText(dbg, L"ms");
@@ -3517,7 +3517,7 @@ static void tickProcessor(void*)
                 {
                     unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
                     CHAR16 dbg[256];
-                    unsigned long long m_sec = total_ticks * 1000 / frequency
+                    unsigned long long m_sec = total_ticks * 1000 / frequency;
                     setText(dbg, L"+++++++++++++ Time to P1 ");
                     appendNumber(dbg, m_sec, true);
                     appendText(dbg, L"ms");
@@ -3590,7 +3590,7 @@ static void tickProcessor(void*)
                 {
                     unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
                     CHAR16 dbg[256];
-                    unsigned long long m_sec = total_ticks * 1000 / frequency
+                    unsigned long long m_sec = total_ticks * 1000 / frequency;
                     setText(dbg, L"+++++++++++++ Time to P2 ");
                     appendNumber(dbg, m_sec, true);
                     appendText(dbg, L"ms");
@@ -3620,7 +3620,7 @@ static void tickProcessor(void*)
                 {
                     unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
                     CHAR16 dbg[256];
-                    unsigned long long m_sec = total_ticks * 1000 / frequency
+                    unsigned long long m_sec = total_ticks * 1000 / frequency;
                     setText(dbg, L"+++++++++++++ Time to P3 ");
                     appendNumber(dbg, m_sec, true);
                     appendText(dbg, L"ms");
@@ -3670,7 +3670,7 @@ static void tickProcessor(void*)
                 {
                     unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
                     CHAR16 dbg[256];
-                    unsigned long long m_sec = total_ticks * 1000 / frequency
+                    unsigned long long m_sec = total_ticks * 1000 / frequency;
                     setText(dbg, L"+++++++++++++ Time to P4 ");
                     appendNumber(dbg, m_sec, true);
                     appendText(dbg, L"ms");
@@ -3830,7 +3830,7 @@ static void tickProcessor(void*)
                     {
                         unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
                         CHAR16 dbg[256];
-                        unsigned long long m_sec = total_ticks * 1000 / frequency
+                        unsigned long long m_sec = total_ticks * 1000 / frequency;
                         setText(dbg, L"+++++++++++++ Time to P5 ");
                         appendNumber(dbg, m_sec, true);
                         appendText(dbg, L"ms");
@@ -4220,7 +4220,7 @@ static void tickProcessor(void*)
                                     {
                                         unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
                                         CHAR16 dbg[256];
-                                        unsigned long long m_sec = total_ticks * 1000 / frequency
+                                        unsigned long long m_sec = total_ticks * 1000 / frequency;
                                         setText(dbg, L"+++++++++++++ Time to P6 ");
                                         appendNumber(dbg, m_sec, true);
                                         appendText(dbg, L"ms");
