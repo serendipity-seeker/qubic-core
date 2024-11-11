@@ -691,7 +691,14 @@ static void processBroadcastTick(Peer* peer, RequestResponseHeader* header)
     {
         if (!(request->tick.computorIndex < NUMBER_OF_COMPUTORS)) addDebugMessage(L"----- Malformed tick.computorIndex");
         if (!(request->tick.epoch == system.epoch)) addDebugMessage(L"----- Malformed request->tick.epoch");
-        if (!(request->tick.tick >= system.tick - 2)) addDebugMessage(L"----- Malformed request->tick.tick");
+        if (!(request->tick.tick >= system.tick - 2)){
+            CHAR16 dbg[256];
+            setText(dbg, L"----- Malformed request->tick.tick. system.tick = ");
+            appendNumber(dbg, system.tick, true);
+            appendText(dbg, L" vs received tick: ");
+            appendNumber(dbg, request->tick.tick, true);
+            addDebugMessage(dbg);
+        }
         if (!ts.tickInCurrentEpochStorage(request->tick.tick)) addDebugMessage(L"----- Malformed tickInCurrentEpochStorage");
         if (!(request->tick.month >= 1 && request->tick.month <= 12
         && request->tick.day >= 1 && request->tick.day <= ((request->tick.month == 1 || request->tick.month == 3 || request->tick.month == 5 || request->tick.month == 7 || request->tick.month == 8 || request->tick.month == 10 || request->tick.month == 12) ? 31 : ((request->tick.month == 4 || request->tick.month == 6 || request->tick.month == 9 || request->tick.month == 11) ? 30 : ((request->tick.year & 3) ? 28 : 29)))
@@ -3879,7 +3886,7 @@ static void tickProcessor(void*)
                                     CHAR16 dbg[256];
                                     setText(dbg, L"+++++++ Broadcasted ");
                                     appendNumber(dbg, countTick, true);
-                                    appendText(dbg, " votes");
+                                    appendText(dbg, L" votes");
                                     addDebugMessage(dbg);
                                 }
                             }
