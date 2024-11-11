@@ -682,6 +682,23 @@ static void processBroadcastTick(Peer* peer, RequestResponseHeader* header)
 
             ts.ticks.releaseLock(request->tick.computorIndex);
         }
+        else 
+        {
+            addDebugMessage(L"----- Malformed signature");
+        }
+    }
+    else 
+    {
+        if (!(request->tick.computorIndex < NUMBER_OF_COMPUTORS)) addDebugMessage(L"----- Malformed tick.computorIndex");
+        if (!(request->tick.epoch == system.epoch)) addDebugMessage(L"----- Malformed request->tick.epoch");
+        if (!(request->tick.tick >= system.tick - 2)) addDebugMessage(L"----- Malformed request->tick.tick");
+        if (!ts.tickInCurrentEpochStorage(request->tick.tick)) addDebugMessage(L"----- Malformed tickInCurrentEpochStorage");
+        if (!(request->tick.month >= 1 && request->tick.month <= 12
+        && request->tick.day >= 1 && request->tick.day <= ((request->tick.month == 1 || request->tick.month == 3 || request->tick.month == 5 || request->tick.month == 7 || request->tick.month == 8 || request->tick.month == 10 || request->tick.month == 12) ? 31 : ((request->tick.month == 4 || request->tick.month == 6 || request->tick.month == 9 || request->tick.month == 11) ? 30 : ((request->tick.year & 3) ? 28 : 29)))
+        && request->tick.hour <= 23
+        && request->tick.minute <= 59
+        && request->tick.second <= 59
+        && request->tick.millisecond <= 999)) addDebugMessage(L"----- Malformed datetime");
     }
 }
 
@@ -3442,16 +3459,7 @@ static void tickProcessor(void*)
                     }
                     unsigned long long debug_start_tick = __rdtsc();                    
                     processTick(processorNumber);
-                    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
-                    {
-                        CHAR16 dbg[256];
-                        unsigned long long m_sec = total_ticks * 1000 / frequency;
-                        setText(dbg, L"+++++++++++++ Time to processTick ");
-                        appendNumber(dbg, m_sec, true);
-                        appendText(dbg, L"ms");
-                        addDebugMessage(dbg);
-                        waitForDebugMessageFlushInAP();
-                    }
+                    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions                    
                     latestProcessedTick = system.tick;
                 }
                 unsigned long long debug_start_tick = __rdtsc();
@@ -3513,16 +3521,6 @@ static void tickProcessor(void*)
                             targetNextTickDataDigestIsKnown = true;
                         }
                     }
-                }
-                {
-                    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
-                    CHAR16 dbg[256];
-                    unsigned long long m_sec = total_ticks * 1000 / frequency;
-                    setText(dbg, L"+++++++++++++ Time to P1 ");
-                    appendNumber(dbg, m_sec, true);
-                    appendText(dbg, L"ms");
-                    addDebugMessage(dbg);
-                    waitForDebugMessageFlushInAP();
                 }
 
                 debug_start_tick = __rdtsc();
@@ -3587,16 +3585,6 @@ static void tickProcessor(void*)
                         }
                     }
                 }
-                {
-                    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
-                    CHAR16 dbg[256];
-                    unsigned long long m_sec = total_ticks * 1000 / frequency;
-                    setText(dbg, L"+++++++++++++ Time to P2 ");
-                    appendNumber(dbg, m_sec, true);
-                    appendText(dbg, L"ms");
-                    addDebugMessage(dbg);
-                    waitForDebugMessageFlushInAP();
-                }
                 debug_start_tick = __rdtsc();
                 ts.tickData.acquireLock();
                 bs->CopyMem(&nextTickData, &ts.tickData[nextTickIndex], sizeof(TickData));
@@ -3616,16 +3604,6 @@ static void tickProcessor(void*)
                         ts.tickData.releaseLock();
                         nextTickData.epoch = 0;
                     }
-                }
-                {
-                    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
-                    CHAR16 dbg[256];
-                    unsigned long long m_sec = total_ticks * 1000 / frequency;
-                    setText(dbg, L"+++++++++++++ Time to P3 ");
-                    appendNumber(dbg, m_sec, true);
-                    appendText(dbg, L"ms");
-                    addDebugMessage(dbg);
-                    waitForDebugMessageFlushInAP();
                 }
                 debug_start_tick = __rdtsc();
                 bool tickDataSuits;
@@ -3666,16 +3644,6 @@ static void tickProcessor(void*)
                             tickDataSuits = (etalonTick.expectedNextTickTransactionDigest == targetNextTickDataDigest);
                         }
                     }
-                }
-                {
-                    unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
-                    CHAR16 dbg[256];
-                    unsigned long long m_sec = total_ticks * 1000 / frequency;
-                    setText(dbg, L"+++++++++++++ Time to P4 ");
-                    appendNumber(dbg, m_sec, true);
-                    appendText(dbg, L"ms");
-                    addDebugMessage(dbg);
-                    waitForDebugMessageFlushInAP();
                 }
                 debug_start_tick = __rdtsc();
                 // operator opt to force this node to switch to new epoch
@@ -3827,16 +3795,6 @@ static void tickProcessor(void*)
                         }
                         nextTickTransactionsSemaphore = 0;
                     }
-                    {
-                        unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
-                        CHAR16 dbg[256];
-                        unsigned long long m_sec = total_ticks * 1000 / frequency;
-                        setText(dbg, L"+++++++++++++ Time to P5 ");
-                        appendNumber(dbg, m_sec, true);
-                        appendText(dbg, L"ms");
-                        addDebugMessage(dbg);
-                        waitForDebugMessageFlushInAP();
-                    }
                     debug_start_tick = __rdtsc();
 
                     if (numberOfKnownNextTickTransactions != numberOfNextTickTransactions)
@@ -3889,6 +3847,7 @@ static void tickProcessor(void*)
                             {
                                 BroadcastTick broadcastTick;
                                 bs->CopyMem(&broadcastTick.tick, &etalonTick, sizeof(Tick));
+                                int countTick = 0;
                                 for (unsigned int i = 0; i < numberOfOwnComputorIndices; i++)
                                 {
                                     broadcastTick.tick.computorIndex = ownComputorIndices[i] ^ BroadcastTick::type;
@@ -3910,10 +3869,18 @@ static void tickProcessor(void*)
                                     sign(computorSubseeds[ownComputorIndicesMapping[i]].m256i_u8, computorPublicKeys[ownComputorIndicesMapping[i]].m256i_u8, digest, broadcastTick.tick.signature);
 
                                     enqueueResponse(NULL, sizeof(broadcastTick), BroadcastTick::type, 0, &broadcastTick);
+                                    countTick++;
                                     // NOTE: here we don't copy these votes to memory, instead we wait other nodes echoing these votes back because:
                                     // - if own votes don't get echoed back, that indicates this node has internet/topo issue, and need to reissue vote (F9)
                                     // - all votes need to be processed in a single place of code (for further handling)
                                     // - all votes are treated equally (own votes and their votes)
+                                }
+                                {
+                                    CHAR16 dbg[256];
+                                    setText(dbg, L"+++++++ Broadcasted ");
+                                    appendNumber(dbg, countTick, true);
+                                    appendText(dbg, " votes");
+                                    addDebugMessage(dbg);
                                 }
                             }
 
@@ -4217,17 +4184,6 @@ static void tickProcessor(void*)
                                         tickTicks[i] = tickTicks[i + 1];
                                     }
                                     tickTicks[sizeof(tickTicks) / sizeof(tickTicks[0]) - 1] = __rdtsc();
-                                    {
-                                        unsigned long long total_ticks = __rdtsc() - debug_start_tick; // for tracking the time processing solutions
-                                        CHAR16 dbg[256];
-                                        unsigned long long m_sec = total_ticks * 1000 / frequency;
-                                        setText(dbg, L"+++++++++++++ Time to P6 ");
-                                        appendNumber(dbg, m_sec, true);
-                                        appendText(dbg, L"ms");
-                                        addDebugMessage(dbg);
-                                        waitForDebugMessageFlushInAP();
-                                    }
-                                    debug_start_tick = __rdtsc();
                                 }
                             }
                         }
