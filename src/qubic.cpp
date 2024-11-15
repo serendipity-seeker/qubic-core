@@ -2794,6 +2794,22 @@ static void beginEpoch()
 #endif
 }
 
+#if !defined(NDEBUG)
+// Only works in application processors (not in main processor loop)
+static void waitForDebugMessageFlushInAP()
+{
+    bool wait = true;
+    while (1)
+    {
+        ACQUIRE(debugLogLock);
+        wait = (debugMessageCount > 0);
+        RELEASE(debugLogLock);
+        if (!wait)
+            break;
+        _mm_pause();
+    }
+}
+#endif
 
 // called by tickProcessor() after system.tick has been incremented
 static void endEpoch()
@@ -2907,6 +2923,19 @@ static void endEpoch()
             ts.tickData.releaseLock();
         }
 
+#ifndef NDEBUG
+        CHAR16 dbgMsgBuf[300];
+        for (unsigned int i = 0; i < NUMBER_OF_COMPUTORS; i++)
+        {
+            setText(dbgMsgBuf, L"tx revenueScore ");
+            appendNumber(dbgMsgBuf, i, FALSE);
+            appendText(dbgMsgBuf, L": ");
+            appendNumber(dbgMsgBuf, revenueScore[i], TRUE);
+            addDebugMessage(dbgMsgBuf);
+            waitForDebugMessageFlushInAP();
+        }
+#endif
+
         // Merge votecount to final rev score
         for (unsigned int i = 0; i < NUMBER_OF_COMPUTORS; i++)
         {
@@ -2927,6 +2956,16 @@ static void endEpoch()
             {
                 revenueScore[i] = 0;
             }
+#ifndef NDEBUG
+            setText(dbgMsgBuf, L"voteCount ");
+            appendNumber(dbgMsgBuf, i, FALSE);
+            appendText(dbgMsgBuf, L": ");
+            appendNumber(dbgMsgBuf, vote_count, FALSE);
+            appendText(dbgMsgBuf, L", total revScore ");
+            appendNumber(dbgMsgBuf, revenueScore[i], TRUE);
+            addDebugMessage(dbgMsgBuf);
+            waitForDebugMessageFlushInAP();
+#endif
         }
 
         // Sort revenue scores to get lowest score of quorum
@@ -2948,6 +2987,11 @@ static void endEpoch()
         {
             sortedRevenueScore[QUORUM - 1] = 1;
         }
+#ifndef NDEBUG
+        setText(dbgMsgBuf, L"threshold sortedRevenueScore[QUORUM - 1] ");
+        addDebugMessage(dbgMsgBuf);
+        waitForDebugMessageFlushInAP();
+#endif
 
         // Get revenue donation data by calling contract GQMPROP::GetRevenueDonation()
         QpiContextUserFunctionCall qpiContext(GQMPROP::__contract_index);
