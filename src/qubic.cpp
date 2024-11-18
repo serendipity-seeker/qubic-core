@@ -2940,6 +2940,12 @@ static void endEpoch()
         for (unsigned int i = 0; i < NUMBER_OF_COMPUTORS; i++)
         {
             unsigned long long vote_count = voteCounter.getVoteCount(i);
+            if (system.tick - system.initialTick <= NUMBER_OF_COMPUTORS)
+            {
+                // Due to the validity check requring 675*451 votes, which assumes at least 676 ticks in the epoch, all vote counts are 0 if the epoch has less ticks.
+                // This is a workaround to prevent that no computor gets revenue in this case.
+                vote_count = 1;
+            }
             if (vote_count != 0)
             {
                 unsigned long long final_score = vote_count * revenueScore[i];
