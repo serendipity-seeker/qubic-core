@@ -1317,49 +1317,87 @@ static void checkAndSwitchMiningPhase()
 
 static void requestProcessor(void* ProcedureArgument)
 {
+#ifndef NDEBUG
+    addDebugMessage(L"reqProc 1");
+#endif
+
     enableAVX();
+
+#ifndef NDEBUG
+    addDebugMessage(L"reqProc 2");
+#endif
 
     unsigned long long processorNumber;
     mpServicesProtocol->WhoAmI(mpServicesProtocol, &processorNumber);
+
+#ifndef NDEBUG
+    addDebugMessage(L"reqProc 3");
+#endif
 
     Processor* processor = (Processor*)ProcedureArgument;
     RequestResponseHeader* header = (RequestResponseHeader*)processor->buffer;
     while (!shutDownNode)
     {
+#ifndef NDEBUG
+        addDebugMessage(L"reqProc 4");
+#endif
         checkinTime(processorNumber);
+#ifndef NDEBUG
+        addDebugMessage(L"reqProc 5");
+#endif
         // in epoch transition, wait here
         if (epochTransitionState)
         {
+#ifndef NDEBUG
+            addDebugMessage(L"reqProc epochTransitionState enter");
+#endif
             _InterlockedIncrement(&epochTransitionWaitingRequestProcessors);
             while (epochTransitionState)
             {
                 _mm_pause();
             }
             _InterlockedDecrement(&epochTransitionWaitingRequestProcessors);
+#ifndef NDEBUG
+            addDebugMessage(L"reqProc epochTransitionState leave");
+#endif
         }
 
+#ifndef NDEBUG
+        addDebugMessage(L"reqProc 6");
+#endif
         // try to compute a solution if any is queued and this thread is assigned to compute solution
         if (solutionProcessorFlags[processorNumber])
         {
             score->tryProcessSolution(processorNumber);
         }
-        
+#ifndef NDEBUG
+        addDebugMessage(L"reqProc 7");
+#endif
+
         if (requestQueueElementTail == requestQueueElementHead)
         {
             _mm_pause();
         }
         else
         {
+#ifndef NDEBUG
+            addDebugMessage(L"reqProc requestQueueTailLock enter");
+#endif
             ACQUIRE(requestQueueTailLock);
 
             if (requestQueueElementTail == requestQueueElementHead)
             {
                 RELEASE(requestQueueTailLock);
+#ifndef NDEBUG
+                addDebugMessage(L"reqProc requestQueueTailLock leave 1");
+#endif
             }
             else
             {
                 const unsigned long long beginningTick = __rdtsc();
-
+#ifndef NDEBUG
+                addDebugMessage(L"reqProc 8");
+#endif
                 {
                     RequestResponseHeader* requestHeader = (RequestResponseHeader*)&requestQueueBuffer[requestQueueElements[requestQueueElementTail].offset];
                     bs->CopyMem(header, requestHeader, requestHeader->size());
@@ -1367,6 +1405,9 @@ static void requestProcessor(void* ProcedureArgument)
                 }
 
                 Peer* peer = requestQueueElements[requestQueueElementTail].peer;
+#ifndef NDEBUG
+                addDebugMessage(L"reqProc 9");
+#endif
 
                 if (requestQueueBufferTail > REQUEST_QUEUE_BUFFER_SIZE - BUFFER_SIZE)
                 {
@@ -1375,6 +1416,10 @@ static void requestProcessor(void* ProcedureArgument)
                 requestQueueElementTail++;
 
                 RELEASE(requestQueueTailLock);
+#ifndef NDEBUG
+                addDebugMessage(L"reqProc 10");
+#endif
+
                 switch (header->type())
                 {
                 case ExchangePublicPeers::type:
@@ -1530,6 +1575,10 @@ static void requestProcessor(void* ProcedureArgument)
                 queueProcessingDenominator++;
 
                 _InterlockedIncrement64(&numberOfProcessedRequests);
+
+#ifndef NDEBUG
+                addDebugMessage(L"reqProc requestQueueTailLock leave 2");
+#endif
             }
         }
     }
@@ -5632,6 +5681,9 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
 
                     bs->CreateEvent(EVT_NOTIFY_SIGNAL, TPL_CALLBACK, shutdownCallback, NULL, &processors[numberOfProcessors].event);
                     mpServicesProtocol->StartupThisAP(mpServicesProtocol, Processor::runFunction, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
+#ifndef NDEBUG
+                    addDebugMessage(L"StartupThisAP");
+#endif
 
                     if (!solutionProcessorFlags[i % NUMBER_OF_SOLUTION_PROCESSORS]
                         && !solutionProcessorFlags[i])
