@@ -4363,12 +4363,14 @@ static void contractProcessorShutdownCallback(EFI_EVENT Event, void* Context)
 static bool loadComputer(CHAR16* directory, bool forceLoadFromFile)
 {
     logToConsole(L"Loading contract files ...");
-    setText(message, L"Loaded SC: ");
     for (unsigned int contractIndex = 0; contractIndex < contractCount; contractIndex++)
     {
         if (contractDescriptions[contractIndex].constructionEpoch == system.epoch && !forceLoadFromFile)
         {
             bs->SetMem(contractStates[contractIndex], contractDescriptions[contractIndex].stateSize, 0);
+            setText(message, CONTRACT_FILE_NAME);
+            appendText(message, L" not loaded but initialized with zeros for construction");
+            logToConsole(message);
         }
         else
         {
@@ -4382,24 +4384,21 @@ static bool loadComputer(CHAR16* directory, bool forceLoadFromFile)
                 if (system.epoch < contractDescriptions[contractIndex].constructionEpoch && contractDescriptions[contractIndex].stateSize >= sizeof(IPO))
                 {
                     setMem(contractStates[contractIndex], contractDescriptions[contractIndex].stateSize, 0);
-                    appendText(message, L"(");
-                    appendText(message, CONTRACT_FILE_NAME);
-                    appendText(message, L" not loaded but initialized with zeros for IPO) ");
+                    setText(message, CONTRACT_FILE_NAME);
+                    appendText(message, L" not loaded but initialized with zeros for IPO");
+                    logToConsole(message);
                 }
                 else
                 {
                     logStatusToConsole(L"EFI_FILE_PROTOCOL.Read() reads invalid number of bytes", loadedSize, __LINE__);
+                    setText(message, L"Failed to load file ");
+                    appendText(message, CONTRACT_FILE_NAME);
+                    logToConsole(message);
                     return false;
                 }
             }
-            else
-            {
-                appendText(message, CONTRACT_FILE_NAME);
-                appendText(message, L" ");
-            }
         }
     }
-    logToConsole(message);
     return true;
 }
 
