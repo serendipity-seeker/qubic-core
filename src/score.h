@@ -2,7 +2,7 @@
 #ifdef NO_UEFI
 unsigned long long top_of_stack;
 #endif
-#include "platform/memory.h"
+#include "platform/memory_util.h"
 #include "platform/m256.h"
 #include "platform/concurrency.h"
 #include "public_settings.h"
@@ -261,7 +261,7 @@ struct ScoreFunction
         CHAR16 log[256];
         if (_computeBuffer == nullptr)
         {
-            if (!allocatePool(sizeof(computeBuffer) * solutionBufferCount, (void**)&_computeBuffer))
+            if (!allocPoolWithErrorLog(L"computeBuffer", sizeof(computeBuffer) * solutionBufferCount, (void**)&_computeBuffer))
             {
                 logToConsole(L"Failed to allocate memory for score solution buffer!");
                 return false;
@@ -271,13 +271,13 @@ struct ScoreFunction
             {
                 auto& cb = _computeBuffer[bufId];
 
-                if (!allocatePool(RANDOM2_POOL_SIZE, (void**)&(cb._poolRandom2Buffer)))
+                if (!allocPoolWithErrorLog(L"poolRandom2Buffer", RANDOM2_POOL_SIZE, (void**)&(cb._poolRandom2Buffer)))
                 {
                     logToConsole(L"Failed to allocate memory for score pool buffer!");
                     return false;
                 }
 
-                if (!allocatePool(allNeuronsCount, (void**)&(cb._neurons.input)))
+                if (!allocPoolWithErrorLog(L"neurons.input", allNeuronsCount, (void**)&(cb._neurons.input)))
                 {
                     setText(log, L"Failed to allocate memory for neurons! Try to allocated ");
                     appendNumber(log, allNeuronsCount / 1024, true);
@@ -286,7 +286,7 @@ struct ScoreFunction
                     return false;
                 }
 
-                if (!allocatePool(synapseSignsCount * sizeof(unsigned long long), (void**)&(cb._synapses.signs)))
+                if (!allocPoolWithErrorLog(L"synapses.signs", synapseSignsCount * sizeof(unsigned long long), (void**)&(cb._synapses.signs)))
                 {
                     setText(log, L"Failed to allocate memory for synapses! Try to allocated ");
                     appendNumber(log, synapseSignsCount * sizeof(unsigned long long) / 1024, true);
@@ -295,7 +295,7 @@ struct ScoreFunction
                     return false;
                 }
 
-                if (!allocatePool(RANDOM2_POOL_SIZE * sizeof(PoolSynapseData), (void**)&(cb._poolSynapseData)))
+                if (!allocPoolWithErrorLog(L"poolSynapseData", RANDOM2_POOL_SIZE * sizeof(PoolSynapseData), (void**)&(cb._poolSynapseData)))
                 {
                     setText(log, L"Failed to allocate memory for pool synapse data! Try to allocated ");
                     appendNumber(log, RANDOM2_POOL_SIZE * sizeof(PoolSynapseData) / 1024, true);
