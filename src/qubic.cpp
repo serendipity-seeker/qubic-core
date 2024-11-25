@@ -1339,11 +1339,11 @@ static void requestProcessor(void* ProcedureArgument)
     while (!shutDownNode)
     {
 #ifndef NDEBUG
-        addDebugMessage(L"reqProc 4");
+        //addDebugMessage(L"reqProc 4");
 #endif
         checkinTime(processorNumber);
 #ifndef NDEBUG
-        addDebugMessage(L"reqProc 5");
+        //addDebugMessage(L"reqProc 5");
 #endif
         // in epoch transition, wait here
         if (epochTransitionState)
@@ -1363,7 +1363,7 @@ static void requestProcessor(void* ProcedureArgument)
         }
 
 #ifndef NDEBUG
-        addDebugMessage(L"reqProc 6");
+        //addDebugMessage(L"reqProc 6");
 #endif
         // try to compute a solution if any is queued and this thread is assigned to compute solution
         if (solutionProcessorFlags[processorNumber])
@@ -1371,7 +1371,7 @@ static void requestProcessor(void* ProcedureArgument)
             score->tryProcessSolution(processorNumber);
         }
 #ifndef NDEBUG
-        addDebugMessage(L"reqProc 7");
+        //addDebugMessage(L"reqProc 7");
 #endif
 
         if (requestQueueElementTail == requestQueueElementHead)
