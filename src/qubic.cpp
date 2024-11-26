@@ -1327,6 +1327,7 @@ static void noRequestProcessor(void* ProcedureArgument)
     requestProcessor(ProcedureArgument);
 }
 
+#pragma optimize("", off)
 static void requestProcessor(void* ProcedureArgument)
 {
     ++reqProc1;
@@ -1604,7 +1605,7 @@ static void requestProcessor(void* ProcedureArgument)
         }
     }
 }
-
+#pragma optimize("", on)
 
 QPI::id QPI::QpiContextFunctionCall::arbitrator() const
 {
