@@ -5730,10 +5730,17 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
                         processors[numberOfProcessors].setupFunction(requestProcessor, &processors[numberOfProcessors]);
                         requestProcessorIDs[nRequestProcessorIDs++] = i;
                     }
-                    checkinTime(numberOfProcessors);
+                    checkinTime(i);
 
                     bs->CreateEvent(EVT_NOTIFY_SIGNAL, TPL_CALLBACK, shutdownCallback, NULL, &processors[numberOfProcessors].event);
+#if 0
                     mpServicesProtocol->StartupThisAP(mpServicesProtocol, Processor::runFunction, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
+#else
+                    if (numberOfProcessors == 1)
+                        mpServicesProtocol->StartupThisAP(mpServicesProtocol, tickProcessor, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
+                    else
+                        mpServicesProtocol->StartupThisAP(mpServicesProtocol, requestProcessor, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
+#endif
 #ifndef NDEBUG
                     addDebugMessage(L"StartupThisAP");
 #endif
