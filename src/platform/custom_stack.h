@@ -82,11 +82,8 @@ private:
 
 extern "C" void __customStackSetupAndRunFunc(void* newStackTop, CustomStackProcessorFunc funcToCall, void* dataToPass);
 
-static volatile unsigned int customStack1 = 0, customStack2 = 0, customStack3 = 0;
-
 void CustomStack::runFunction(void* data)
 {
-    ++customStack1;
     ASSERT(data != nullptr);
     CustomStack* me = reinterpret_cast<CustomStack*>(data);
 
@@ -95,12 +92,6 @@ void CustomStack::runFunction(void* data)
     ASSERT(me->setupFuncToCall != nullptr);
     ASSERT(me->stackTop > me->stackBottom);
 
-    ++customStack2;
-#if 0
     __customStackSetupAndRunFunc(me->stackTop, me->setupFuncToCall, me->setupDataToPass);
-#else
-    me->setupFuncToCall(me->setupDataToPass);
-#endif
-    ++customStack3;
 }
 

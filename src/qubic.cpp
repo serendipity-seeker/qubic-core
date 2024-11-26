@@ -1315,111 +1315,52 @@ static void checkAndSwitchMiningPhase()
     }
 }
 
-static volatile unsigned int reqProc1 = 0, reqProcX = 0;
-static volatile unsigned int reqProc2 = 0;
-static volatile unsigned int reqProc3 = 0, reqProc4 = 0, reqProc5 = 0, reqProc6 = 0, reqProc7 = 0, reqProc8 = 0, reqProc99 = 0;
-
-static void requestProcessor(void* ProcedureArgument);
-
-static void noRequestProcessor(void* ProcedureArgument)
-{
-    ++reqProcX;
-    requestProcessor(ProcedureArgument);
-}
-
 #pragma optimize("", off)
 static void requestProcessor(void* ProcedureArgument)
 {
-    ++reqProc1;
-#ifndef NDEBUG
-    addDebugMessage(L"reqProc 1");
-#endif
-
     enableAVX();
-
-    ++reqProc2;
-#ifndef NDEBUG
-    addDebugMessage(L"reqProc 2");
-#endif
 
     unsigned long long processorNumber;
     mpServicesProtocol->WhoAmI(mpServicesProtocol, &processorNumber);
-
-    ++reqProc3;
-#ifndef NDEBUG
-    addDebugMessage(L"reqProc 3");
-#endif
 
     Processor* processor = (Processor*)ProcedureArgument;
     RequestResponseHeader* header = (RequestResponseHeader*)processor->buffer;
     while (!shutDownNode)
     {
-        ++reqProc4;
-#ifndef NDEBUG
-        //addDebugMessage(L"reqProc 4");
-#endif
         checkinTime(processorNumber);
-        ++reqProc5;
-#ifndef NDEBUG
-        //addDebugMessage(L"reqProc 5");
-#endif
         // in epoch transition, wait here
         if (epochTransitionState)
         {
-#ifndef NDEBUG
-            addDebugMessage(L"reqProc epochTransitionState enter");
-#endif
             _InterlockedIncrement(&epochTransitionWaitingRequestProcessors);
             while (epochTransitionState)
             {
                 _mm_pause();
             }
             _InterlockedDecrement(&epochTransitionWaitingRequestProcessors);
-#ifndef NDEBUG
-            addDebugMessage(L"reqProc epochTransitionState leave");
-#endif
         }
 
-        ++reqProc6;
-#ifndef NDEBUG
-        //addDebugMessage(L"reqProc 6");
-#endif
         // try to compute a solution if any is queued and this thread is assigned to compute solution
         if (solutionProcessorFlags[processorNumber])
         {
             score->tryProcessSolution(processorNumber);
         }
-        ++reqProc7;
-#ifndef NDEBUG
-        //addDebugMessage(L"reqProc 7");
-#endif
-
+        
         if (requestQueueElementTail == requestQueueElementHead)
         {
             _mm_pause();
         }
         else
         {
-#ifndef NDEBUG
-            addDebugMessage(L"reqProc requestQueueTailLock enter");
-#endif
             ACQUIRE(requestQueueTailLock);
 
             if (requestQueueElementTail == requestQueueElementHead)
             {
                 RELEASE(requestQueueTailLock);
-                ++reqProc99;
-#ifndef NDEBUG
-                addDebugMessage(L"reqProc requestQueueTailLock leave 1");
-#endif
             }
             else
             {
                 const unsigned long long beginningTick = __rdtsc();
-                ++reqProc8;
-#ifndef NDEBUG
-                addDebugMessage(L"reqProc 8");
-#endif
+
                 {
                     RequestResponseHeader* requestHeader = (RequestResponseHeader*)&requestQueueBuffer[requestQueueElements[requestQueueElementTail].offset];
                     bs->CopyMem(header, requestHeader, requestHeader->size());
@@ -1427,9 +1368,6 @@ static void requestProcessor(void* ProcedureArgument)
                 }
 
                 Peer* peer = requestQueueElements[requestQueueElementTail].peer;
-#ifndef NDEBUG
-                addDebugMessage(L"reqProc 9");
-#endif
 
                 if (requestQueueBufferTail > REQUEST_QUEUE_BUFFER_SIZE - BUFFER_SIZE)
                 {
@@ -1438,10 +1376,6 @@ static void requestProcessor(void* ProcedureArgument)
                 requestQueueElementTail++;
 
                 RELEASE(requestQueueTailLock);
-#ifndef NDEBUG
-                addDebugMessage(L"reqProc 10");
-#endif
-
                 switch (header->type())
                 {
                 case ExchangePublicPeers::type:
@@ -1597,15 +1531,12 @@ static void requestProcessor(void* ProcedureArgument)
                 queueProcessingDenominator++;
 
                 _InterlockedIncrement64(&numberOfProcessedRequests);
-
-#ifndef NDEBUG
-                addDebugMessage(L"reqProc requestQueueTailLock leave 2");
-#endif
             }
         }
     }
 }
 #pragma optimize("", on)
+
 
 QPI::id QPI::QpiContextFunctionCall::arbitrator() const
 {
@@ -4385,14 +4316,12 @@ static void contractProcessorShutdownCallback(EFI_EVENT Event, void* Context)
 static bool loadComputer(CHAR16* directory, bool forceLoadFromFile)
 {
     logToConsole(L"Loading contract files ...");
+    setText(message, L"Loaded SC: ");
     for (unsigned int contractIndex = 0; contractIndex < contractCount; contractIndex++)
     {
         if (contractDescriptions[contractIndex].constructionEpoch == system.epoch && !forceLoadFromFile)
         {
             bs->SetMem(contractStates[contractIndex], contractDescriptions[contractIndex].stateSize, 0);
-            setText(message, CONTRACT_FILE_NAME);
-            appendText(message, L" not loaded but initialized with zeros for construction");
-            logToConsole(message);
         }
         else
         {
@@ -4406,21 +4335,24 @@ static bool loadComputer(CHAR16* directory, bool forceLoadFromFile)
                 if (system.epoch < contractDescriptions[contractIndex].constructionEpoch && contractDescriptions[contractIndex].stateSize >= sizeof(IPO))
                 {
                     setMem(contractStates[contractIndex], contractDescriptions[contractIndex].stateSize, 0);
-                    setText(message, CONTRACT_FILE_NAME);
-                    appendText(message, L" not loaded but initialized with zeros for IPO");
-                    logToConsole(message);
+                    appendText(message, L"(");
+                    appendText(message, CONTRACT_FILE_NAME);
+                    appendText(message, L" not loaded but initialized with zeros for IPO) ");
                 }
                 else
                 {
                     logStatusToConsole(L"EFI_FILE_PROTOCOL.Read() reads invalid number of bytes", loadedSize, __LINE__);
-                    setText(message, L"Failed to load file ");
-                    appendText(message, CONTRACT_FILE_NAME);
-                    logToConsole(message);
                     return false;
                 }
             }
+            else
+            {
+                appendText(message, CONTRACT_FILE_NAME);
+                appendText(message, L" ");
+            }
         }
     }
+    logToConsole(message);
     return true;
 }
 
@@ -5178,62 +5110,13 @@ static void logHealthStatus()
             allThreadsAreGood = false;
             appendText(message, L"Request Processor #");
             appendNumber(message, tid, false);
-            //appendText(message, L" is not responsive | ");
-            appendText(message, L" is not responsive for ");
-            appendNumber(message, diffInSecond, false);
-            appendText(message, L" sec | ");
+            appendText(message, L" is not responsive | ");
         }
     }
     if (allThreadsAreGood)
     {
         appendText(message, L"All threads are healthy.");
     }
-    logToConsole(message);
-
-    setText(message, L"Reqest Processor info: shutDownNode=");
-    appendNumber(message, shutDownNode, FALSE);
-    appendText(message, L" , epochTransitionState=");
-    appendNumber(message, epochTransitionState, FALSE);
-    appendText(message, L" , epochTransitionWaitingRequestProcessors=");
-    appendNumber(message, epochTransitionWaitingRequestProcessors, FALSE);
-    appendText(message, L" , requestQueueElementTail=");
-    appendNumber(message, requestQueueElementTail, FALSE);
-    appendText(message, L" , requestQueueElementHead=");
-    appendNumber(message, requestQueueElementHead, FALSE);
-    appendText(message, L" , requestQueueTailLock=");
-    appendNumber(message, requestQueueTailLock, FALSE);
-    appendText(message, L" , requestQueueBufferTail=");
-    appendNumber(message, requestQueueBufferTail, FALSE);
-    appendText(message, L" , requestQueueBufferHead=");
-    appendNumber(message, requestQueueBufferHead, FALSE);
-    logToConsole(message);
-    setText(message, L"Reqest Processor info: 1-");
-    appendNumber(message, reqProc1, FALSE);
-    appendText(message, L" , 2-");
-    appendNumber(message, reqProc2, FALSE);
-    appendText(message, L" , 3-");
-    appendNumber(message, reqProc3, FALSE);
-    appendText(message, L" , 4-");
-    appendNumber(message, reqProc4, FALSE);
-    appendText(message, L" , 5-");
-    appendNumber(message, reqProc5, FALSE);
-    appendText(message, L" , 6-");
-    appendNumber(message, reqProc6, FALSE);
-    appendText(message, L" , 7-");
-    appendNumber(message, reqProc7, FALSE);
-    appendText(message, L" , 8-");
-    appendNumber(message, reqProc8, FALSE);
-    appendText(message, L" , 99-");
-    appendNumber(message, reqProc99, FALSE);
-    appendText(message, L" , X-");
-    appendNumber(message, reqProcX, FALSE);
-    logToConsole(message);
-    setText(message, L"Custom stack info: 1-");
-    appendNumber(message, customStack1, FALSE);
-    appendText(message, L" , 2-");
-    appendNumber(message, customStack2, FALSE);
-    appendText(message, L" , 3-");
-    appendNumber(message, customStack3, FALSE);
     logToConsole(message);
 
     // Print used function call stack size
@@ -5745,26 +5628,12 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
                     else
                     {
                         processors[numberOfProcessors].type = Processor::RequestProcessor;
-                        if (i > 10)
-                            processors[numberOfProcessors].setupFunction(noRequestProcessor, &processors[numberOfProcessors]);
-                        else
-                            processors[numberOfProcessors].setupFunction(requestProcessor, &processors[numberOfProcessors]);
+                        processors[numberOfProcessors].setupFunction(requestProcessor, &processors[numberOfProcessors]);
                         requestProcessorIDs[nRequestProcessorIDs++] = i;
                     }
-                    checkinTime(i);
 
                     bs->CreateEvent(EVT_NOTIFY_SIGNAL, TPL_CALLBACK, shutdownCallback, NULL, &processors[numberOfProcessors].event);
-#if 1
                     mpServicesProtocol->StartupThisAP(mpServicesProtocol, Processor::runFunction, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
-#else
-                    if (numberOfProcessors == 1)
-                        mpServicesProtocol->StartupThisAP(mpServicesProtocol, tickProcessor, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
-                    else
-                        mpServicesProtocol->StartupThisAP(mpServicesProtocol, noRequestProcessor, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
-#endif
-#ifndef NDEBUG
-                    addDebugMessage(L"StartupThisAP");
-#endif
 
                     if (!solutionProcessorFlags[i % NUMBER_OF_SOLUTION_PROCESSORS]
                         && !solutionProcessorFlags[i])
