@@ -1315,14 +1315,20 @@ static void checkAndSwitchMiningPhase()
     }
 }
 
+static volatile unsigned int reqProc1 = 0;
+static volatile unsigned int reqProc2 = 0;
+static volatile unsigned int reqProc3 = 0, reqProc4 = 0, reqProc5 = 0, reqProc6 = 0, reqProc7 = 0, reqProc8 = 0, reqProc99 = 0;
+
 static void requestProcessor(void* ProcedureArgument)
 {
+    ++reqProc1;
 #ifndef NDEBUG
     addDebugMessage(L"reqProc 1");
 #endif
 
     enableAVX();
 
+    ++reqProc2;
 #ifndef NDEBUG
     addDebugMessage(L"reqProc 2");
 #endif
@@ -1330,6 +1336,7 @@ static void requestProcessor(void* ProcedureArgument)
     unsigned long long processorNumber;
     mpServicesProtocol->WhoAmI(mpServicesProtocol, &processorNumber);
 
+    ++reqProc3;
 #ifndef NDEBUG
     addDebugMessage(L"reqProc 3");
 #endif
@@ -1338,10 +1345,12 @@ static void requestProcessor(void* ProcedureArgument)
     RequestResponseHeader* header = (RequestResponseHeader*)processor->buffer;
     while (!shutDownNode)
     {
+        ++reqProc4;
 #ifndef NDEBUG
         //addDebugMessage(L"reqProc 4");
 #endif
         checkinTime(processorNumber);
+        ++reqProc5;
 #ifndef NDEBUG
         //addDebugMessage(L"reqProc 5");
 #endif
@@ -1362,6 +1371,7 @@ static void requestProcessor(void* ProcedureArgument)
 #endif
         }
 
+        ++reqProc6;
 #ifndef NDEBUG
         //addDebugMessage(L"reqProc 6");
 #endif
@@ -1370,6 +1380,7 @@ static void requestProcessor(void* ProcedureArgument)
         {
             score->tryProcessSolution(processorNumber);
         }
+        ++reqProc7;
 #ifndef NDEBUG
         //addDebugMessage(L"reqProc 7");
 #endif
@@ -1388,6 +1399,7 @@ static void requestProcessor(void* ProcedureArgument)
             if (requestQueueElementTail == requestQueueElementHead)
             {
                 RELEASE(requestQueueTailLock);
+                ++reqProc99;
 #ifndef NDEBUG
                 addDebugMessage(L"reqProc requestQueueTailLock leave 1");
 #endif
@@ -1395,6 +1407,7 @@ static void requestProcessor(void* ProcedureArgument)
             else
             {
                 const unsigned long long beginningTick = __rdtsc();
+                ++reqProc8;
 #ifndef NDEBUG
                 addDebugMessage(L"reqProc 8");
 #endif
@@ -5185,6 +5198,25 @@ static void logHealthStatus()
     appendText(message, L" , requestQueueBufferHead=");
     appendNumber(message, requestQueueBufferHead, FALSE);
     logToConsole(message);
+    setText(message, L"Reqest Processor info: 1-");
+    appendNumber(message, reqProc1, FALSE);
+    appendText(message, L" , 2-");
+    appendNumber(message, reqProc2, FALSE);
+    appendText(message, L" , 3-");
+    appendNumber(message, reqProc3, FALSE);
+    appendText(message, L" , 4-");
+    appendNumber(message, reqProc4, FALSE);
+    appendText(message, L" , 5-");
+    appendNumber(message, reqProc5, FALSE);
+    appendText(message, L" , 6-");
+    appendNumber(message, reqProc6, FALSE);
+    appendText(message, L" , 7-");
+    appendNumber(message, reqProc7, FALSE);
+    appendText(message, L" , 8-");
+    appendNumber(message, reqProc8, FALSE);
+    appendText(message, L" , 99-");
+    appendNumber(message, reqProc99, FALSE);
+    logToConsole(message);
 
     // Print used function call stack size
     setText(message, L"Function call stack usage: ");
@@ -5698,6 +5730,7 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
                         processors[numberOfProcessors].setupFunction(requestProcessor, &processors[numberOfProcessors]);
                         requestProcessorIDs[nRequestProcessorIDs++] = i;
                     }
+                    checkinTime(numberOfProcessors);
 
                     bs->CreateEvent(EVT_NOTIFY_SIGNAL, TPL_CALLBACK, shutdownCallback, NULL, &processors[numberOfProcessors].event);
                     mpServicesProtocol->StartupThisAP(mpServicesProtocol, Processor::runFunction, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
