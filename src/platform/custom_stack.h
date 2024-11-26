@@ -92,6 +92,10 @@ void CustomStack::runFunction(void* data)
     ASSERT(me->setupFuncToCall != nullptr);
     ASSERT(me->stackTop > me->stackBottom);
 
+#if 0
     __customStackSetupAndRunFunc(me->stackTop, me->setupFuncToCall, me->setupDataToPass);
+#else
+    me->setupFuncToCall(me->setupDataToPass);
+#endif
 }
 
