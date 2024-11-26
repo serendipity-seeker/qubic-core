@@ -1319,6 +1319,8 @@ static volatile unsigned int reqProc1 = 0, reqProcX = 0;
 static volatile unsigned int reqProc2 = 0;
 static volatile unsigned int reqProc3 = 0, reqProc4 = 0, reqProc5 = 0, reqProc6 = 0, reqProc7 = 0, reqProc8 = 0, reqProc99 = 0;
 
+static void requestProcessor(void* ProcedureArgument);
+
 static void noRequestProcessor(void* ProcedureArgument)
 {
     ++reqProcX;
