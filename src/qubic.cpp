@@ -5156,13 +5156,34 @@ static void logHealthStatus()
             allThreadsAreGood = false;
             appendText(message, L"Request Processor #");
             appendNumber(message, tid, false);
-            appendText(message, L" is not responsive | ");
+            //appendText(message, L" is not responsive | ");
+            appendText(message, L" is not responsive for ");
+            appendNumber(message, diffInSecond, false);
+            appendText(message, L" sec | ");
         }
     }
     if (allThreadsAreGood)
     {
         appendText(message, L"All threads are healthy.");
     }
+    logToConsole(message);
+
+    setText(message, L"Reqest Processor info: shutDownNode=");
+    appendNumber(message, shutDownNode, FALSE);
+    appendText(message, L" , epochTransitionState=");
+    appendNumber(message, epochTransitionState, FALSE);
+    appendText(message, L" , epochTransitionWaitingRequestProcessors=");
+    appendNumber(message, epochTransitionWaitingRequestProcessors, FALSE);
+    appendText(message, L" , requestQueueElementTail=");
+    appendNumber(message, requestQueueElementTail, FALSE);
+    appendText(message, L" , requestQueueElementHead=");
+    appendNumber(message, requestQueueElementHead, FALSE);
+    appendText(message, L" , requestQueueTailLock=");
+    appendNumber(message, requestQueueTailLock, FALSE);
+    appendText(message, L" , requestQueueBufferTail=");
+    appendNumber(message, requestQueueBufferTail, FALSE);
+    appendText(message, L" , requestQueueBufferHead=");
+    appendNumber(message, requestQueueBufferHead, FALSE);
     logToConsole(message);
 
     // Print used function call stack size
