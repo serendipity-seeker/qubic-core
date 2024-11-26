@@ -1322,6 +1322,7 @@ static volatile unsigned int reqProc3 = 0, reqProc4 = 0, reqProc5 = 0, reqProc6 
 static void noRequestProcessor(void* ProcedureArgument)
 {
     ++reqProcX;
+    requestProcessor(ProcedureArgument);
 }
 
 static void requestProcessor(void* ProcedureArgument)
