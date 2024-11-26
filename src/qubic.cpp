@@ -1315,9 +1315,14 @@ static void checkAndSwitchMiningPhase()
     }
 }
 
-static volatile unsigned int reqProc1 = 0;
+static volatile unsigned int reqProc1 = 0, reqProcX = 0;
 static volatile unsigned int reqProc2 = 0;
 static volatile unsigned int reqProc3 = 0, reqProc4 = 0, reqProc5 = 0, reqProc6 = 0, reqProc7 = 0, reqProc8 = 0, reqProc99 = 0;
+
+static void noRequestProcessor(void* ProcedureArgument)
+{
+    ++reqProcX;
+}
 
 static void requestProcessor(void* ProcedureArgument)
 {
@@ -5216,6 +5221,8 @@ static void logHealthStatus()
     appendNumber(message, reqProc8, FALSE);
     appendText(message, L" , 99-");
     appendNumber(message, reqProc99, FALSE);
+    appendText(message, L" , X-");
+    appendNumber(message, reqProcX, FALSE);
     logToConsole(message);
 
     // Print used function call stack size
@@ -5739,7 +5746,7 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
                     if (numberOfProcessors == 1)
                         mpServicesProtocol->StartupThisAP(mpServicesProtocol, tickProcessor, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
                     else
-                        mpServicesProtocol->StartupThisAP(mpServicesProtocol, requestProcessor, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
+                        mpServicesProtocol->StartupThisAP(mpServicesProtocol, noRequestProcessor, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
 #endif
 #ifndef NDEBUG
                     addDebugMessage(L"StartupThisAP");
