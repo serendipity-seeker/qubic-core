@@ -5224,6 +5224,13 @@ static void logHealthStatus()
     appendText(message, L" , X-");
     appendNumber(message, reqProcX, FALSE);
     logToConsole(message);
+    setText(message, L"Custom stack info: 1-");
+    appendNumber(message, customStack1, FALSE);
+    appendText(message, L" , 2-");
+    appendNumber(message, customStack2, FALSE);
+    appendText(message, L" , 3-");
+    appendNumber(message, customStack3, FALSE);
+    logToConsole(message);
 
     // Print used function call stack size
     setText(message, L"Function call stack usage: ");
@@ -5734,13 +5741,16 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE* systemTable)
                     else
                     {
                         processors[numberOfProcessors].type = Processor::RequestProcessor;
-                        processors[numberOfProcessors].setupFunction(requestProcessor, &processors[numberOfProcessors]);
+                        if (i > 10)
+                            processors[numberOfProcessors].setupFunction(noRequestProcessor, &processors[numberOfProcessors]);
+                        else
+                            processors[numberOfProcessors].setupFunction(requestProcessor, &processors[numberOfProcessors]);
                         requestProcessorIDs[nRequestProcessorIDs++] = i;
                     }
                     checkinTime(i);
 
                     bs->CreateEvent(EVT_NOTIFY_SIGNAL, TPL_CALLBACK, shutdownCallback, NULL, &processors[numberOfProcessors].event);
-#if 0
+#if 1
                     mpServicesProtocol->StartupThisAP(mpServicesProtocol, Processor::runFunction, i, processors[numberOfProcessors].event, 0, &processors[numberOfProcessors], NULL);
 #else
                     if (numberOfProcessors == 1)
